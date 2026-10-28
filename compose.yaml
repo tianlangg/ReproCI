@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgres:16.8-bookworm
+    environment:
+      POSTGRES_USER: reproci
+      POSTGRES_PASSWORD: reproci
+      POSTGRES_DB: reproci
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reproci"]
+      interval: 2s
+      retries: 20
+    volumes:
+      - db_data:/var/lib/postgresql/data
+  migrate:
+    build: .
+    command: ["alembic", "upgrade", "head"]
+    environment: &env
+      REPROCI_DATABASE_URL: postgresql+psycopg://reproci:reproci@db:5432/reproci
+      REPROCI_ARTIFACT_ROOT: /artifacts
+      REPROCI_ARTIFACT_VOLUME: reproci_artifacts
+      REPROCI_GITHUB_SECRET: ${REPROCI_GITHUB_SECRET:-}
+      REPROCI_MAX_CONCURRENT_JOBS: ${REPROCI_MAX_CONCURRENT_JOBS:-2}
+      REPROCI_ATTEMPT_TIMEOUT: ${REPROCI_ATTEMPT_TIMEOUT:-120}
+    depends_on:
+      db:
+        condition: service_healthy
+  api:
+    build: .
+    command: ["uvicorn", "reproci.api:app", "--host", "0.0.0.0", "--port", "8000"]
+    environment: *env
+    ports:
+      - "127.0.0.1:${REPROCI_PORT:-8001}:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+  scheduler:
+    build: .
+    command: ["python", "-m", "reproci.scheduler"]
+    environment: *env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    volumes:
+      - artifacts:/artifacts
+      - ./demo/history:/demo-history:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+volumes:
+  db_data:
+  artifacts:
+    name: reproci_artifacts

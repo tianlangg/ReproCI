@@ -1,0 +1,22 @@
+{
+  "workload": "eight identical suites with a two-second sleep; synthetic scheduling workload",
+  "commit": "cb77de5fa7cacd525999a8b96671e67e3958fea2",
+  "host": "macOS-15.6.1-arm64-arm-64bit-Mach-O",
+  "cpu": "arm",
+  "docker": "29.8.2",
+  "serial_median": 36.395,
+  "serial_range": [
+    35.224,
+    38.103
+  ],
+  "parallel_median": 17.334,
+  "parallel_range": [
+    17.102,
+    18.303
+  ],
+  "speedup": 2.1,
+  "raw_csv": "examples/benchmark.csv",
+  "docker_resources": "CPUs=10 MemoryBytes=8319504384",
+  "image_id": "sha256:067ae550d9bdcff889cdb9b6affc9fbf5af42a3730f09e6e78b224604c591839",
+  "measurement_boundary": "Batch submission through all terminal results. Image build and initial repository creation excluded; checkout, container startup, execution, and persistence included."
+}
