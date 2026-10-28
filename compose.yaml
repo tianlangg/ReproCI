@@ -35,7 +35,8 @@ services:
         condition: service_completed_successfully
   scheduler:
     build: .
-    command: ["python", "-m", "reproci.scheduler"]
+    # The local fixture is owned by the host user on Linux; trust only this mounted demo path.
+    command: ["sh", "-c", "git config --global --add safe.directory /demo-history/.git && exec python -m reproci.scheduler"]
     environment: *env
     depends_on:
       migrate:
